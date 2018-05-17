@@ -1,0 +1,17 @@
+{
+  "name": "pig-audio.js",
+  "version": "0.0.1",
+  "description": "Arrange audio in a responsive, progressive-loading grid managed in JavaScript using CSS transforms.",
+  "repository": "https://github.com/govwhiz/pig-audio.js",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-jscs": "^3.0.1",
+    "gulp-jshint": "^1.11.2",
+    "gulp-jsmin": "^0.1.5",
+    "gulp-minify": "0.0.5",
+    "gulp-plumber": "^1.0.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.4.2"
+  },
+  "license": "MIT"
+}
