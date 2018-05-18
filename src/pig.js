@@ -102,12 +102,6 @@
       '  text-shadow: 1px 1px 3px black, -1px -1px 3px black;' +
       '  transition: ' + (transitionSpeed / 1000) + 's ease opacity;' +
       '  -webkit-transition: ' + (transitionSpeed / 1000) + 's ease opacity;' +
-      '}' +
-      '.' + classPrefix + '-figure span.' + classPrefix + '-loaded {' +
-      '  left: auto;' +
-      '  position: relative;' +
-      '  width: auto;' +
-      '  text-shadow: none;' +
       '}'
     );
 
@@ -146,28 +140,6 @@
   }
 
 
-  function _loadAudio(url, success, error) {
-    var
-      progressiveAudio = this,
-      xhr              = new XMLHttpRequest();
-
-    xhr.onreadystatechange = function() {
-      if(xhr.readyState == 4 && xhr.status == 200) {
-        var reader = new FileReader();
-        reader.onloadend = function() {
-          success.call(progressiveAudio, reader.result);
-        };
-        reader.readAsDataURL(xhr.response);
-      } else if(xhr.readyState == 4 && xhr.status !== 200) {
-        error.call(progressiveAudio, xhr.status);
-      }
-    };
-    xhr.open('GET', url);
-    xhr.responseType = 'blob';
-    xhr.send();
-  }
-
-
   function PigAudio(audioData, options) {
     // Global State
     this.inRAF = false;
@@ -192,16 +164,16 @@
       secondaryAudioBufferHeight: 300,
 
 
-      urlForAudio: function(filename, size) {
-        return '/audio/' + filename;
+      urlForAudio: function(fileUrl) {
+        return fileUrl;
       }
     };
 
     // We extend the default settings with the provided overrides.
     _extend(this.settings, options || {});
 
-    // Our global reference for images in the grid.  Note that not all of these
-    // images are necessarily in view or loaded.
+    // Our global reference for audios in the grid.  Note that not all of these
+    // audios are necessarily in view or loaded.
     this.elements = this._parseAudioData(audioData);
 
     // Inject our boilerplate CSS.
@@ -314,7 +286,7 @@
 
     }.bind(this));
 
-    // No space below the last image
+    // No space below the last audio
     this.totalHeight = translateY - this.settings.spaceBetweenAudios;
   };
 
@@ -337,7 +309,7 @@
 
     }.bind(this));
 
-    // No space below the last image
+    // No space below the last audio
     this.totalHeight = translateY - this.settings.spaceBetweenAudios;
   };
 
@@ -405,7 +377,7 @@
 
 
   PigAudio.prototype.enable = function() {
-    // Find the container to load images into, if it exists.
+    // Find the container to load audios into, if it exists.
     this.container = document.getElementById(this.settings.containerId);
     if (!this.container) {
       console.error('Could not find element with ID ' + this.settings.containerId);
@@ -532,14 +504,13 @@
     this.filename = singleImageData.filename;  // Filename
     this.sessionId = singleImageData.sessionId; // Session Id
     this.submissionId = singleImageData.submissionId; // Submission Id
-    this.index = index;  // The index in the list of images
+    this.index = index;  // The index in the list of audios
 
     // The PigAudio instance
     this.pig = pig;
 
     this.classNames = {
-      figure: pig.settings.classPrefix + '-figure',
-      loaded: pig.settings.classPrefix + '-loaded',
+      figure: pig.settings.classPrefix + '-figure'
     };
 
     return this;
@@ -560,60 +531,34 @@
       if (!this.audio) {
         this.audio = document.createElement('span');
         var audioSrc = this.pig.settings.urlForAudio(this.filename);
+        var audioValue = document.createTextNode(audioSrc);
+        this.audio.appendChild(audioValue);
 
-        _loadAudio.call(this, audioSrc, successAudioLoad, errorAudioLoad);
+        this.audio.addEventListener("click", function (event) {
+          this.pig.settings.click(event, this.filename, this.submissionId);
+        }.bind(this));
 
         this.getElement().appendChild(this.audio);
       }
     }.bind(this), 100);
-
-
-    function successAudioLoad(audioBase64Data) {
-      if(this.audio) {
-        this.audio.addEventListener("click", function (event) {
-          this.pig.settings.click(event, audioBase64Data, this.submissionId);
-        }.bind(this));
-
-        this.audio.className += ' ' + this.classNames.loaded;
-      }
-    }
-
-
-    function errorAudioLoad(errorStatus) {
-      console.error(errorStatus);
-      this.pig.settings.error.call(this, errorStatus, renovateAudio);
-    }
-
-
-    function renovateAudio() {
-       var audioSrc = this.pig.settings.urlForAudio(this.filename);
-       _loadAudio.call(this, audioSrc, successAudioLoad, errorAudioLoad);
-    }
   };
 
   /**
-   * Removes the figure from the DOM, removes the thumbnail and full image, and
-   * deletes the this.thumbnail and this.fullImage properties off of the
+   * Removes the figure from the DOM, removes the audio, and
+   * deletes the audio properties off of the
    * ProgressiveAudio object.
    */
   ProgressiveAudio.prototype.hide = function() {
-    // Remove the images from the element, so that if a user is scrolling super
-    // fast, we won't try to load every image we scroll past.
+    // Remove the audios from the element, so that if a user is scrolling super
+    // fast, we won't try to load every audio we scroll past.
     if (this.getElement()) {
-      if (this.thumbnail) {
-        this.thumbnail.src = '';
-        this.getElement().removeChild(this.thumbnail);
-        delete this.thumbnail;
-      }
-
-      if (this.fullImage) {
-        this.fullImage.src = '';
-        this.getElement().removeChild(this.fullImage);
-        delete this.fullImage;
+      if (this.audio) {
+        this.getElement().removeChild(this.audio);
+        delete this.audio;
       }
     }
 
-    // Remove the image from the DOM.
+    // Remove the audio from the DOM.
     if (this.existsOnPage) {
       this.pig.container.removeChild(this.getElement());
     }
