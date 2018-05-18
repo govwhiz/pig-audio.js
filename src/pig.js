@@ -99,7 +99,6 @@
       '  top: 0;' +
       '  height: '+ audioHeight + 'px;' +
       '  width: 100%;' +
-      '  text-shadow: 1px 1px 3px black, -1px -1px 3px black;' +
       '  transition: ' + (transitionSpeed / 1000) + 's ease opacity;' +
       '  -webkit-transition: ' + (transitionSpeed / 1000) + 's ease opacity;' +
       '}'
