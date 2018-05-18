@@ -83,6 +83,11 @@
       '}' +
       '.' + classPrefix + '-figure-title {' +
       '  background-color: transparent;' +
+      '  overflow: hidden;' +
+      '  left: 0;' +
+      '  position: absolute;' +
+      '  top: 0;' +
+      '  margin: 0;' +
       '}' +
       '.' + classPrefix + '-figure h1 {' +
       '  font-size: 21px;' +
@@ -423,8 +428,7 @@
     this.pig = pig;
 
     this.classNames = {
-      figure: pig.settings.classPrefix + '-figure ' +
-              pig.settings.classPrefix + '-figure-title'
+      figure: pig.settings.classPrefix + '-figure-title'
     };
 
     return this;
