@@ -89,7 +89,7 @@
       '  top: 0;' +
       '  margin: 0;' +
       '}' +
-      '.' + classPrefix + '-figure h1 {' +
+      '.' + classPrefix + '-figure-title h1 {' +
       '  font-size: 21px;' +
       '  margin: 0 15px;' +
       '  line-height: ' + groupTitleHeight + 'px;' +
