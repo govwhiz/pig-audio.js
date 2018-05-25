@@ -64,7 +64,7 @@
   }());
 
 
-  function _injectStyle(containerId, classPrefix, transitionSpeed, groupTitleHeight, audioHeight) {
+  function _injectStyle(containerId, classPrefix, transitionSpeed, trackHeight) {
 
     var css = (
       'body {' + 
@@ -74,35 +74,18 @@
       '  position: relative;' +
       '}' +
       '.' + classPrefix + '-figure {' +
-      '  background-color: #D5D5D5;' +
       '  overflow: hidden;' +
       '  left: 0;' +
       '  position: absolute;' +
       '  top: 0;' +
       '  margin: 0;' +
       '}' +
-      '.' + classPrefix + '-figure-title {' +
-      '  background-color: transparent;' +
-      '  overflow: hidden;' +
+      '.' + classPrefix + '-figure .track-list-item {' +
       '  left: 0;' +
       '  position: absolute;' +
       '  top: 0;' +
-      '  margin: 0;' +
-      '}' +
-      '.' + classPrefix + '-figure-title h1 {' +
-      '  font-size: 21px;' +
-      '  margin: 0 15px;' +
-      '  line-height: ' + groupTitleHeight + 'px;' +
-      '  color: rgba(0, 0, 0, 0.9);' +
-      '  text-transform: uppercase;' +
-      '  font-family: keepcalm, "Helvetica Neue", Helvetica, Arial, sans-serif;' +
-      '  background-color: transparent;' +
-      '}' +
-      '.' + classPrefix + '-figure span {' +
-      '  left: 0;' +
-      '  position: absolute;' +
-      '  top: 0;' +
-      '  height: '+ audioHeight + 'px;' +
+      '  line-height: ' + trackHeight + 'px;' +
+      '  height: '+ trackHeight + 'px;' +
       '  width: 100%;' +
       '  transition: ' + (transitionSpeed / 1000) + 's ease opacity;' +
       '  -webkit-transition: ' + (transitionSpeed / 1000) + 's ease opacity;' +
@@ -144,6 +127,16 @@
   }
 
 
+  function height(element) {
+    var el = element[0] || element;
+
+    if (isNaN(el.offsetHeight)) {
+      return el.document.documentElement.clientHeight;
+    }
+    return el.offsetHeight;
+  }
+
+
   function PigAudio(audioData, options) {
     // Global State
     this.inRAF = false;
@@ -160,9 +153,8 @@
       containerId:                'pig-audio',
       classPrefix:                'pig-audio',
       figureTagName:              'figure',
-      groupTitleHeight:           100,
-      audioHeight:                50,
-      spaceBetweenAudios:         8,
+      trackHeight:                50,
+      spaceBetweenAudios:         1,
       transitionSpeed:            500,
       primaryAudioBufferHeight:   1000,
       secondaryAudioBufferHeight: 300,
@@ -185,8 +177,7 @@
       this.settings.containerId,
       this.settings.classPrefix,
       this.settings.transitionSpeed,
-      this.settings.groupTitleHeight,
-      this.settings.audioHeight
+      this.settings.trackHeight
     );
 
     // Allows for chaining with `enable()`.
@@ -214,30 +205,8 @@
         titleIndex = 0;
 
     audioData.forEach(function (audio, index) {
-      if(index === 0) {
-        createTitleData.call(this, audio);
-      }
-
       var progressiveAudio = new ProgressiveAudio(audio, index, this);
       progressiveElements.push(progressiveAudio);
-
-      if (audioData[index + 1] && audio[this.settings.groupKey] !== audioData[index + 1][this.settings.groupKey]) {
-        createTitleData.call(this, audioData[index + 1]);
-      }
-
-
-      function createTitleData(titleData) {
-        var title = {
-          sessionId:    titleData.sessionId, // Session Id
-          submissionId: titleData.submissionId // Submission Id
-        },
-        progressiveTitle = new ProgressiveTitle(title, titleIndex, this);
-
-        titleIndex++;
-
-        progressiveElements.push(progressiveTitle);
-      }
-
     }.bind(this));
 
     return progressiveElements;
@@ -262,32 +231,16 @@
     var transition = this._getTransitionString();
 
     [].forEach.call(this.elements, function(el, index) {
-      // ProgressiveTitle
-      if(el instanceof ProgressiveTitle) {
-        // This is NOT DOM manipulation.
-        el.style = {
-          height:     this.settings.groupTitleHeight,
-          translateX: translateX,
-          translateY: translateY,
-          transition: transition,
-        };
+      // This is NOT DOM manipulation.
+      el.style = {
+        width:      parseInt(wrapperWidth),
+        height:     this.settings.trackHeight,
+        translateX: translateX,
+        translateY: translateY,
+        transition: transition,
+      };
 
-        translateY += this.settings.groupTitleHeight + this.settings.spaceBetweenAudios;
-
-      // ProgressiveAudio
-      } else if (el instanceof ProgressiveAudio) {
-        // This is NOT DOM manipulation.
-        el.style = {
-          width:      parseInt(wrapperWidth),
-          height:     this.settings.audioHeight,
-          translateX: translateX,
-          translateY: translateY,
-          transition: transition,
-        };
-
-        translateY += this.settings.audioHeight + this.settings.spaceBetweenAudios;
-      }
-
+      translateY += this.settings.trackHeight + this.settings.spaceBetweenAudios;
     }.bind(this));
 
     // No space below the last audio
@@ -302,15 +255,7 @@
     var translateY = 0; // The current translateY value that we are at
 
     [].forEach.call(this.elements, function(el, index) {
-      // ProgressiveTitle
-      if(el instanceof ProgressiveTitle) {
-        translateY += this.settings.groupTitleHeight + this.settings.spaceBetweenAudios;
-
-      // ProgressiveAudio
-      } else if (el instanceof ProgressiveAudio) {
-        translateY += this.settings.audioHeight + this.settings.spaceBetweenAudios;
-      }
-
+      translateY += this.settings.trackHeight + this.settings.spaceBetweenAudios;
     }.bind(this));
 
     // No space below the last audio
@@ -322,6 +267,10 @@
 
     // Set the container height
     this.container.style.height = this.totalHeight + 'px';
+    var
+      headerHeight   = height(document.getElementsByTagName('header')[0]),
+      waveformHeight = height(document.getElementsByClassName('waveform')[0]),
+      topOffset      = headerHeight + waveformHeight;
 
     // Get the top and bottom buffers heights.
     var bufferTop =
@@ -340,8 +289,8 @@
     var maxTranslateY = this.latestYOffset - containerOffset + windowHeight + bufferBottom;
 
     this.elements.forEach(function(el) {
-      if (containerOffset + el.style.translateY <= this.latestYOffset &&
-          containerOffset + el.style.translateY + el.style.height >= this.latestYOffset) {
+      if (containerOffset + el.style.translateY <= this.latestYOffset + topOffset &&
+          containerOffset + el.style.translateY + el.style.height >= this.latestYOffset + topOffset) {
         window.name = el[this.settings.groupKey];
       }
 
@@ -412,101 +361,17 @@
   };
 
 
-  // ProgressiveTitle
-  function ProgressiveTitle(singleTitleData, index, pig) {
-    this.type = 'title';
-
-    // Global State
-    this.existsOnPage = false; // True if the element exists on the page.
-
-    // Instance information
-    this.sessionId = singleTitleData.sessionId; // Session Id
-    this.submissionId = singleTitleData.submissionId; // Submission Id
-    this.index = index;  // The index in the list of titles
-
-    // The PigAudio instance
-    this.pig = pig;
-
-    this.classNames = {
-      figure: pig.settings.classPrefix + '-figure-title'
-    };
-
-    return this;
-  }
-
-
-  ProgressiveTitle.prototype.load = function() {
-    this.existsOnPage = true;
-    this._updateStyles();
-    this.pig.container.appendChild(this.getElement());
-
-    setTimeout(function() {
-
-      if (!this.existsOnPage) {
-        return;
-      }
-
-      // Show title
-      if (!this.title) {
-        var titleValue = document.createTextNode(this[this.pig.settings.groupKey]);
-
-        this.title = document.createElement("H1");
-        this.title.appendChild(titleValue);
-
-        this.getElement().appendChild(this.title);
-      }
-    }.bind(this), 100);
-  };
-
-
-  ProgressiveTitle.prototype.hide = function() {
-    if (this.getElement()) {
-      if (this.title) {
-        this.getElement().removeChild(this.title);
-        delete this.title;
-      }
-    }
-
-    // Remove the title from the DOM.
-    if (this.existsOnPage) {
-      this.pig.container.removeChild(this.getElement());
-    }
-
-    this.existsOnPage = false;
-  };
-
-
-  ProgressiveTitle.prototype.getElement = function() {
-    if (!this.element) {
-      this.element = document.createElement(this.pig.settings.figureTagName);
-      this.element.className = this.classNames.figure;
-      this._updateStyles();
-    }
-
-    return this.element;
-  };
-
-
-  ProgressiveTitle.prototype._updateStyles = function() {
-    this.getElement().style.transition = this.style.transition;
-    this.getElement().style.height = this.style.height + 'px';
-    this.getElement().style.transform = (
-      'translate3d(' + this.style.translateX + 'px,' +
-        this.style.translateY + 'px, 0)');
-  };
-
-
   // ProgressiveAudio
-  function ProgressiveAudio(singleImageData, index, pig) {
-    this.type = 'audio';
-
+  function ProgressiveAudio(singleAudioData, index, pig) {
     // Global State
     this.existsOnPage = false; // True if the element exists on the page.
 
     // Instance information
-    this.filename = singleImageData.filename;  // Filename
-    this.sessionId = singleImageData.sessionId; // Session Id
-    this.submissionId = singleImageData.submissionId; // Submission Id
+    this.duration = singleAudioData.duration; // Time Duration
+    this.filename = singleAudioData.filename;  // Filename
+    this.ordinal  = singleAudioData.ordinal;
+    this.sessionId = singleAudioData.sessionId; // Session Id
+    this.submissionId = singleAudioData.submissionId; // Submission Id
     this.index = index;  // The index in the list of audios
 
     // The PigAudio instance
@@ -532,16 +397,49 @@
 
       // Show audio
       if (!this.audio) {
-        this.audio = document.createElement('span');
-        var audioSrc = this.pig.settings.urlForAudio(this.filename);
-        var audioValue = document.createTextNode(audioSrc);
-        this.audio.appendChild(audioValue);
+        var
+          element       = this.getElement(),
+          ordinalElem   = document.createElement('span'),
+          contentElem   = document.createElement('div'),
+          groupElem     = document.createElement('span'),
+          filenameElem  = document.createElement('span'),
+          durationElem  = document.createElement('div'),
+          ordinalValue  = document.createTextNode(this.ordinal),
+          groupValue    = document.createTextNode(this.submissionId + ' - '),
+          audioSrc      = this.pig.settings.urlForAudio(this.filename),
+          filenameValue = document.createTextNode(audioSrc),
+          durationValue = document.createTextNode(
+            this.duration ? (this.duration.substr(0, 2) === '00'
+              ? this.duration.substr(3, this.duration.length -1)
+              : this.duration)
+            : ''
+          );
+
+        this.audio = document.createElement('div');
+
+        ordinalElem.className  = 'ordinal';
+        contentElem.className  = 'content';
+        groupElem.className    = 'group';
+        filenameElem.className = 'filename';
+        durationElem.className = 'duration';
+        this.audio.className   = 'track-list-item';
+
+        ordinalElem.appendChild(ordinalValue);
+        groupElem.appendChild(groupValue);
+        filenameElem.appendChild(filenameValue);
+        contentElem.appendChild(groupElem);
+        contentElem.appendChild(filenameElem);
+        durationElem.appendChild(durationValue);
+
+        this.audio.appendChild(ordinalElem);
+        this.audio.appendChild(contentElem);
+        this.audio.appendChild(durationElem);
 
         this.audio.addEventListener("click", function (event) {
-          this.pig.settings.click(event, this.filename, this.submissionId);
+          this.pig.settings.click(element, this.filename, this.submissionId);
         }.bind(this));
 
-        this.getElement().appendChild(this.audio);
+        element.appendChild(this.audio);
       }
     }.bind(this), 100);
   };
