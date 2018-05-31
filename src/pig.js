@@ -128,12 +128,16 @@
 
 
   function height(element) {
-    var el = element[0] || element;
+    if(element) {
+      var el = element[0] || element;
 
-    if (isNaN(el.offsetHeight)) {
-      return el.document.documentElement.clientHeight;
+      if (isNaN(el.offsetHeight)) {
+        return el.document.documentElement.clientHeight;
+      }
+      return el.offsetHeight;
+    } else {
+      return 0;
     }
-    return el.offsetHeight;
   }
 
 
