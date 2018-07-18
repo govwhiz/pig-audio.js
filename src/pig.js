@@ -217,7 +217,7 @@
   };
 
 
-  PigAudio.prototype._computeLayout = function() {
+  PigAudio.prototype._computeLayout = function(totalHeight) {
     // Constants
     var wrapperWidth = parseInt(this.container.clientWidth);
 
@@ -248,22 +248,30 @@
     }.bind(this));
 
     // No space below the last audio
-    this.totalHeight = translateY - this.settings.spaceBetweenAudios;
+    if (typeof totalHeight === 'number') {
+      this.totalHeight = totalHeight;
+    } else {
+      this.totalHeight = translateY - this.settings.spaceBetweenAudios;
+    }
   };
 
 
   /**
    * get container total height
   **/
-  PigAudio.prototype._setTotalHeight = function() {
-    var translateY = 0; // The current translateY value that we are at
+  PigAudio.prototype._setTotalHeight = function (totalHeight) {
+    if (typeof totalHeight === 'number') {
+      this.totalHeight = totalHeight;
+    } else {
+      var translateY = 0; // The current translateY value that we are at
 
-    [].forEach.call(this.elements, function(el, index) {
-      translateY += this.settings.trackHeight + this.settings.spaceBetweenAudios;
-    }.bind(this));
+      [].forEach.call(this.elements, function (el, index) {
+        translateY += this.settings.trackHeight + this.settings.spaceBetweenAudios;
+      }.bind(this));
 
-    // No space below the last audio
-    this.totalHeight = translateY - this.settings.spaceBetweenAudios;
+      // No space below the last audio
+      this.totalHeight = translateY - this.settings.spaceBetweenAudios;
+    }
   };
 
 
@@ -333,7 +341,7 @@
   };
 
 
-  PigAudio.prototype.enable = function() {
+  PigAudio.prototype.enable = function(totalHeight) {
     // Find the container to load audios into, if it exists.
     this.container = document.getElementById(this.settings.containerId);
     if (!this.container) {
@@ -345,12 +353,12 @@
     window.addEventListener('scroll', this.onScroll);
 
     this.onScroll();
-    this._computeLayout();
+    this._computeLayout(totalHeight);
     this._doLayout();
 
     optimizedResize.add(function() {
       this.lastWindowWidth = window.innerWidth;
-      this._computeLayout();
+      this._computeLayout(totalHeight);
       this._doLayout();
     }.bind(this));
 
