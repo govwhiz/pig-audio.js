@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GovWhiz Dashboard</title>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <style type="text/css">
+      html, body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header, .footer {
+        flex: none;
+        height: 50px;
+        background-color: red;
+      }
+
+      .container {
+        flex: auto;
+        width: 1170px;
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-right: auto;
+        margin-left: auto;
+        background-color: #edecec;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .top, .bottom {
+        flex: none;
+        height: 100px;
+        background-color: #4CB050;
+      }
+
+      .audio {
+        overflow-y: auto; 
+      }
+
+      .pig-audio-figure {
+        cursor: pointer;
+        box-shadow: 0 0 0 1px #f2f2f2;
+        overflow: hidden;
+        left: 0;
+        position: absolute;
+        top: 0;
+        margin: 0;
+      }
+
+      .pig-audio-figure .track-list-item {
+        font: 12px/1.4 "Lucida Grande","Lucida Sans Unicode","Lucida Sans",Garuda,Verdana,Tahoma,sans-serif;
+        color: #999;
+        line-height: 30px;
+        height: 30px;
+        padding-left: 5px;
+        outline: 0;
+        display: flex;
+        overflow: hidden;
+        left: 0;
+        position: absolute;
+        top: 0;
+        -webkit-transition: 0.5s ease opacity;
+      }
+
+      .pig-audio-figure .track-list-item .ordinal {
+        color: #333;
+        margin-right: 5px;
+      }
+
+      .pig-audio-figure .track-list-item .content {
+        -webkit-flex: 1;
+        -ms-flex: 1;
+        flex: 1;
+        color: #333;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        word-break: normal;
+      }
+
+      .pig-audio-figure .track-list-item .content .group {
+        color: #999;
+      }
+
+      .pig-audio-figure .track-list-item .duration {
+        font-size: 10px;
+        padding: 0 5px 0 12px;
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-flex-direction: row;
+        -ms-flex-direction: row;
+        flex-direction: row;
+        -webkit-align-items: center;
+        -ms-flex-align: center;
+        align-items: center;
+      }
+    </style>
+    <script src="src/pig.js"></script>
+  </head>
+  <body>
+    <div class="header"></div>
+    <div class="container">
+      <div class="top"></div>
+      <div class="audio">
+        <div id="audio"></div>
+      </div>
+      <div class="bottom"></div>
+    </div>
+    <div class="footer"></div>
+
+    <script>
+      var
+        CONTAINER_ID = 'audio',
+        OPTIONS      = {
+                         containerId: CONTAINER_ID,
+                         trackHeight: 30,
+                         groupKey:    'submissionId'
+                       },
+        DATA         = generateData(500),
+        PIG          = new window.PigAudio(DATA, OPTIONS);
+
+      PIG.enable();
+
+
+      function generateData(dataNumber) {
+        var collection = [];
+        for(var i = 0; i <= dataNumber; i++) {
+          var dataItem = {
+            duration: '001234',
+            filename: makeFileName(),
+            ordinal: i,
+            sessionId: makeSessionId(),
+            submissionId: makeSubmissionId() 
+          };
+
+          collection.push(dataItem);
+        }
+
+
+        return collection;
+      }
+
+
+      function makeFileName() {
+        var text = "";
+        var possible = "ABCDEFGHIJKLMN OPQRSTUVWXYZabcdefghij klmnopqrstuvwxyz0123 456789";
+
+        for (var i = 0; i < 50; i++)
+          text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+        return text;
+      }
+
+
+      function makeSessionId() {
+        var text = "";
+        var possible = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+        for (var i = 0; i < 10; i++)
+          text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+        return text;
+      }
+
+
+      function makeSubmissionId() {
+        var text = "";
+        var possible = "123456789";
+
+        for (var i = 0; i < 5; i++)
+          text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+        return text;
+      }
+    </script>
+  </body>
+</html>

@@ -65,11 +65,7 @@
 
 
   function _injectStyle(containerId, classPrefix, transitionSpeed, trackHeight) {
-
     var css = (
-      'body {' + 
-      '  overflow-y: scroll;' +
-      '}' + 
       '#' + containerId + ' {' +
       '  position: relative;' +
       '}' +
@@ -111,32 +107,6 @@
       if (obj2.hasOwnProperty(i)) {
         obj1[i] = obj2[i];
       }
-    }
-  }
-
-
-  function _getOffsetTop(elem){
-      var offsetTop = 0;
-      do {
-        if (!isNaN(elem.offsetTop)){
-            offsetTop += elem.offsetTop;
-        }
-        elem = elem.offsetParent;
-      } while(elem);
-      return offsetTop;
-  }
-
-
-  function height(element) {
-    if(element) {
-      var el = element[0] || element;
-
-      if (isNaN(el.offsetHeight)) {
-        return el.document.documentElement.clientHeight;
-      }
-      return el.offsetHeight;
-    } else {
-      return 0;
     }
   }
 
@@ -217,7 +187,7 @@
   };
 
 
-  PigAudio.prototype._computeLayout = function(totalHeight) {
+  PigAudio.prototype._computeLayout = function() {
     // Constants
     var wrapperWidth = parseInt(this.container.clientWidth);
 
@@ -248,41 +218,28 @@
     }.bind(this));
 
     // No space below the last audio
-    if (typeof totalHeight === 'number') {
-      this.totalHeight = totalHeight;
-    } else {
-      this.totalHeight = translateY - this.settings.spaceBetweenAudios;
-    }
+    this.totalHeight = translateY - this.settings.spaceBetweenAudios;
   };
 
 
   /**
    * get container total height
   **/
-  PigAudio.prototype._setTotalHeight = function (totalHeight) {
-    if (typeof totalHeight === 'number') {
-      this.totalHeight = totalHeight;
-    } else {
-      var translateY = 0; // The current translateY value that we are at
+  PigAudio.prototype._setTotalHeight = function () {
+    var translateY = 0; // The current translateY value that we are at
 
-      [].forEach.call(this.elements, function (el, index) {
-        translateY += this.settings.trackHeight + this.settings.spaceBetweenAudios;
-      }.bind(this));
+    [].forEach.call(this.elements, function (el, index) {
+      translateY += this.settings.trackHeight + this.settings.spaceBetweenAudios;
+    }.bind(this));
 
-      // No space below the last audio
-      this.totalHeight = translateY - this.settings.spaceBetweenAudios;
-    }
+    // No space below the last audio
+    this.totalHeight = translateY - this.settings.spaceBetweenAudios;
   };
 
 
   PigAudio.prototype._doLayout = function() {
-
     // Set the container height
     this.container.style.height = this.totalHeight + 'px';
-    var
-      headerHeight   = height(document.getElementsByTagName('header')[0]),
-      waveformHeight = height(document.getElementsByClassName('waveform')[0]),
-      topOffset      = headerHeight + waveformHeight;
 
     // Get the top and bottom buffers heights.
     var bufferTop =
@@ -291,22 +248,21 @@
       this.settings.secondaryAudioBufferHeight;
     var bufferBottom =
       (this.scrollDirection === 'down') ?
-      this.settings.secondaryAudioBufferHeight :
-      this.settings.primaryAudioBufferHeight;
+      this.settings.primaryAudioBufferHeight :
+      this.settings.secondaryAudioBufferHeight;
 
     // Now we compute the location of the top and bottom buffers:
-    var containerOffset = _getOffsetTop(this.container);
-    var windowHeight = window.innerHeight;
-    var minTranslateYPlusHeight = this.latestYOffset - containerOffset - bufferTop;
-    var maxTranslateY = this.latestYOffset - containerOffset + windowHeight + bufferBottom;
+    var scrollElementHeight = this.scrollElement.offsetHeight;
+    var minTranslateY = this.latestYOffset - bufferTop;
+    var maxTranslateY = this.latestYOffset + scrollElementHeight + bufferBottom;
 
     this.elements.forEach(function(el) {
-      if (containerOffset + el.style.translateY <= this.latestYOffset + topOffset &&
-          containerOffset + el.style.translateY + el.style.height >= this.latestYOffset + topOffset) {
+      if (el.style.translateY <= this.latestYOffset &&
+          el.style.translateY + el.style.height >= this.latestYOffset) {
         window.name = el[this.settings.groupKey];
       }
 
-      if (el.style.translateY + el.style.height < minTranslateYPlusHeight ||
+      if (el.style.translateY + el.style.height < minTranslateY ||
           el.style.translateY > maxTranslateY) {
         // Hide Element
         el.hide();
@@ -322,7 +278,7 @@
     var _this = this;
 
     var onScroll = function() {
-      var newYOffset = window.pageYOffset;
+      var newYOffset = _this.scrollElement.scrollTop;
       _this.previousYOffset = _this.latestYOffset || newYOffset;
       _this.latestYOffset = newYOffset;
       _this.scrollDirection = (_this.latestYOffset > _this.previousYOffset) ? 'down' : 'up';
@@ -341,24 +297,25 @@
   };
 
 
-  PigAudio.prototype.enable = function(totalHeight) {
+  PigAudio.prototype.enable = function() {
     // Find the container to load audios into, if it exists.
     this.container = document.getElementById(this.settings.containerId);
+    this.scrollElement = this.container.parentElement;
     if (!this.container) {
       console.error('Could not find element with ID ' + this.settings.containerId);
       return;
     }
 
     this.onScroll = this._getOnScroll();
-    window.addEventListener('scroll', this.onScroll);
+    this.scrollElement.addEventListener('scroll', this.onScroll);
 
     this.onScroll();
-    this._computeLayout(totalHeight);
+    this._computeLayout();
     this._doLayout();
 
     optimizedResize.add(function() {
       this.lastWindowWidth = window.innerWidth;
-      this._computeLayout(totalHeight);
+      this._computeLayout();
       this._doLayout();
     }.bind(this));
 
@@ -367,7 +324,7 @@
 
 
   PigAudio.prototype.disable = function() {
-    window.removeEventListener('scroll', this.onScroll);
+    this.scrollElement.removeEventListener('scroll', this.onScroll);
     optimizedResize.disable();
     return this;
   };
@@ -395,7 +352,6 @@
 
     return this;
   }
-
 
   ProgressiveAudio.prototype.load = function() {
     this.existsOnPage = true;
