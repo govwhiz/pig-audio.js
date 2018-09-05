@@ -116,7 +116,6 @@
     this.inRAF = false;
     this.isTransitioning = false;
     this.latestYOffset = 0;
-    this.lastWindowWidth = window.innerWidth;
     this.scrollDirection = 'down';
 
     // List of audios that are loading or completely loaded on screen.
@@ -314,7 +313,6 @@
     this._doLayout();
 
     optimizedResize.add(function() {
-      this.lastWindowWidth = window.innerWidth;
       this._computeLayout();
       this._doLayout();
     }.bind(this));
@@ -339,8 +337,8 @@
     this.duration = singleAudioData.duration; // Time Duration
     this.filename = singleAudioData.filename;  // Filename
     this.ordinal  = singleAudioData.ordinal;
-    this.sessionId = singleAudioData.sessionId; // Session Id
     this.submissionId = singleAudioData.submissionId; // Submission Id
+    this.submissionPk = singleAudioData.submissionPk; // Submission Pk
     this.index = index;  // The index in the list of audios
 
     // The PigAudio instance
@@ -373,7 +371,7 @@
           filenameElem  = document.createElement('span'),
           durationElem  = document.createElement('div'),
           ordinalValue  = document.createTextNode(this.ordinal),
-          groupValue    = document.createTextNode(this.submissionId + ' - '),
+          groupValue    = document.createTextNode(this.submissionPk + ' - '),
           audioSrc      = this.pig.settings.urlForAudio(this.filename),
           filenameValue = document.createTextNode(audioSrc),
           durationValue = document.createTextNode(
