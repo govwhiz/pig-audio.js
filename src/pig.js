@@ -461,7 +461,7 @@
         this.audio.appendChild(durationElem);
 
         this.audio.addEventListener("click", function (event) {
-          this.pig.settings.click(element, this.filename, this.submissionId);
+          this.pig.settings.click(this.submissionId, this.filename);
         }.bind(this));
 
         element.appendChild(this.audio);
