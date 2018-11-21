@@ -329,13 +329,17 @@
 
 
   PigAudio.prototype.updateAudio = function(audioData) {
-    var addElements = this._parseAudioData(audioData);
+    var addElements = this._parseAudioData(imageData);
     var submissionId = addElements[0].submissionId;
+    var submissionPk = addElements[0].submissionPk;
 
     var pastIndex = null;
     var pastLength = 0;
 
-    this.elements.forEach(function (el, index) {
+    this.elements.forEach(function (el, index, elements) {
+      var nextElement = elements[index + 1];
+
+      // update element
       if(el.submissionId === submissionId) {
         pastLength++;
 
@@ -346,10 +350,20 @@
         // Hide Element
         el.hide();
       }
+
+      // past element inside
+      if(nextElement && submissionPk < el.submissionPk &&
+         submissionPk > nextElement.submissionPk) {
+        pastLength++;
+
+        if(pastIndex === null) {
+          pastIndex = index + 1;
+        }
+      }
     });
 
     if(pastIndex === null) {
-      pastIndex = 0;
+      pastIndex = (submissionPk - this.elements[0].submissionPk) > 0 ? 0 : this.elements.length;
     }
 
     Array.prototype.splice.apply(this.elements, [pastIndex, pastLength].concat(addElements));
