@@ -329,7 +329,7 @@
 
 
   PigAudio.prototype.updateAudio = function(audioData) {
-    var addElements = this._parseAudioData(imageData);
+    var addElements = this._parseAudioData(audioData);
     var submissionId = addElements[0].submissionId;
     var submissionPk = addElements[0].submissionPk;
 
