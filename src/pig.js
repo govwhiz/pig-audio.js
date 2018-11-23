@@ -191,7 +191,8 @@
     var wrapperWidth = parseInt(this.container.clientWidth);
 
     var translateX = 0;
-    var translateY = this.container.offsetTop - this.container.parentElement.offsetTop; // The current translateY value that we are at
+    var offsetTop = this.container.offsetTop - this.container.parentElement.offsetTop;
+    var translateY = offsetTop; // The current translateY value that we are at
 
     if (!this.isTransitioning) {
       this.isTransitioning = true;
@@ -217,7 +218,7 @@
     }.bind(this));
 
     // No space below the last audio
-    this.totalHeight = translateY - this.settings.spaceBetweenAudios;
+    this.totalHeight = translateY - offsetTop - this.settings.spaceBetweenAudios;
   };
 
 
