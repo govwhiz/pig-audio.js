@@ -192,7 +192,7 @@
 
     var translateX = 0;
     var offsetTop = this.container.offsetTop - this.container.parentElement.offsetTop;
-    var translateY = offsetTop; // The current translateY value that we are at
+    var translateY = 0; // The current translateY value that we are at
 
     if (!this.isTransitioning) {
       this.isTransitioning = true;
@@ -211,6 +211,7 @@
         height:     this.settings.trackHeight,
         translateX: translateX,
         translateY: translateY,
+        scrollTo:   translateY + offsetTop,
         transition: transition,
       };
 
@@ -218,7 +219,7 @@
     }.bind(this));
 
     // No space below the last audio
-    this.totalHeight = translateY - offsetTop - this.settings.spaceBetweenAudios;
+    this.totalHeight = translateY - this.settings.spaceBetweenAudios;
   };
 
 
