@@ -191,7 +191,7 @@
     var wrapperWidth = parseInt(this.container.clientWidth);
 
     var translateX = 0;
-    var translateY = 0; // The current translateY value that we are at
+    var translateY = this.container.offsetTop - this.container.parentElement.offsetTop; // The current translateY value that we are at
 
     if (!this.isTransitioning) {
       this.isTransitioning = true;
@@ -354,7 +354,6 @@
       // past element inside
       if(nextElement && submissionPk < el.submissionPk &&
          submissionPk > nextElement.submissionPk) {
-        pastLength++;
 
         if(pastIndex === null) {
           pastIndex = index + 1;
