@@ -301,12 +301,12 @@
   PigAudio.prototype.enable = function() {
     // Find the container to load audios into, if it exists.
     this.container = document.getElementById(this.settings.containerId);
-    this.scrollElement = this.container.parentElement;
     if (!this.container) {
       console.error('Could not find element with ID ' + this.settings.containerId);
       return;
     }
 
+    this.scrollElement = this.container.parentElement;
     this.onScroll = this._getOnScroll();
     this.scrollElement.addEventListener('scroll', this.onScroll);
 
