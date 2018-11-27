@@ -258,13 +258,13 @@
     var maxTranslateY = this.latestYOffset + scrollElementHeight + bufferBottom;
 
     this.elements.forEach(function(el) {
-      if (el.style.translateY <= this.latestYOffset &&
-          el.style.translateY + el.style.height >= this.latestYOffset) {
+      if (el.style.scrollTo <= this.latestYOffset &&
+          el.style.scrollTo + el.style.height >= this.latestYOffset) {
         window.name = el.submissionId;
       }
 
-      if (el.style.translateY + el.style.height < minTranslateY ||
-          el.style.translateY > maxTranslateY) {
+      if (el.style.scrollTo + el.style.height < minTranslateY ||
+          el.style.scrollTo > maxTranslateY) {
         // Hide Element
         el.hide();
       } else {
@@ -364,7 +364,9 @@
     });
 
     if(pastIndex === null) {
-      pastIndex = (submissionPk - this.elements[0].submissionPk) > 0 ? 0 : this.elements.length;
+      pastIndex = this.elements.length > 0 && (submissionPk - this.elements[0].submissionPk) > 0
+        ? 0
+        : this.elements.length;
     }
 
     Array.prototype.splice.apply(this.elements, [pastIndex, pastLength].concat(addElements));
